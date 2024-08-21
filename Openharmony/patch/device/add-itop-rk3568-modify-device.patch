@@ -1,0 +1,81 @@
+From 399053bf30abbc9d8d01f7aac17506bfad868492 Mon Sep 17 00:00:00 2001
+From: fovt <chenzigui1762@phytium.com.cn>
+Date: Tue, 20 Aug 2024 11:39:33 +0800
+Subject: [PATCH] add itop-rk3568 modify
+
+Change-Id: I01743b7884410ef97896045a374b298e0e72dfc5
+---
+ rk3568/kernel/build_kernel.sh      | 14 +++++++++++---
+ rk3568/kernel/fovt_build_kernel.sh | 10 ++++++++++
+ 2 files changed, 21 insertions(+), 3 deletions(-)
+ create mode 100755 rk3568/kernel/fovt_build_kernel.sh
+
+diff --git a/rk3568/kernel/build_kernel.sh b/rk3568/kernel/build_kernel.sh
+index f6f8702..e4a885d 100755
+--- a/rk3568/kernel/build_kernel.sh
++++ b/rk3568/kernel/build_kernel.sh
+@@ -28,7 +28,8 @@ ENABLE_LTO_O0=${12}
+ 
+ KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/${KERNEL_VERSION}
+ KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/${KERNEL_VERSION}
+-KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/${KERNEL_VERSION}
++#KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/${KERNEL_VERSION}
++KERNEL_SOURCE=/home3/chenzigui/src/Openharmony/d2000/OH_V5.1_BE1/rk-kernel/linux-5.10
+ KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/${KERNEL_VERSION}
+ KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/${KERNEL_VERSION}/rk3568_patch/kernel.patch
+ BUILD_SCRIPT_PATH=${3}
+@@ -76,6 +77,9 @@ function copy_and_patch_kernel_source()
+     mkdir -p ${KERNEL_OBJ_TMP_PATH}
+ 
+     cp -arf ${KERNEL_SOURCE}/* ${KERNEL_SRC_TMP_PATH}/
++    cp -rf ${BUILD_SCRIPT_PATH}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
++
++    return
+ 
+     cd ${KERNEL_SRC_TMP_PATH}
+ 
+@@ -168,11 +172,13 @@ if [ ${KERNEL_SOURCE_CHANGED}  -ne 0 ]; then
+     copy_and_patch_kernel_source
+ else
+     echo "no changes to kernel, skip source copy."
++    copy_and_patch_kernel_source
+ fi
+ 
+ cd ${KERNEL_SRC_TMP_PATH}
+ 
+-eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
++#eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
++eval $MAKE_OHOS_ENV ./make-ohos.sh TOPEET-RK3568 $RAMDISK_ARG ${ENABLE_LTO_O0}
+ 
+ # revert linux-6.6 hdf stdarg.h path
+ if [ ${KERNEL_VERSION} == "linux-6.6" ]
+@@ -199,7 +205,9 @@ fi
+ 
+ popd
+ 
+-../kernel/src_tmp/${KERNEL_VERSION}/make-boot.sh ..
++#../kernel/src_tmp/${KERNEL_VERSION}/make-boot.sh ..
++# This makes it easy to execute fovt_build_kernel.sh from any path(xxx/fovt_build_kernel.sh)
++${KERNEL_SRC_TMP_PATH}/make-boot.sh ${ROOT_DIR}/out
+ 
+ if [ ${KERNEL_SOURCE_CHANGED} -ne 0 ]; then
+     cp ${ROOT_DIR}/out/kernel/checkpoint/last_build.info ${ROOT_DIR}/out/kernel/checkpoint/last_build.backup
+diff --git a/rk3568/kernel/fovt_build_kernel.sh b/rk3568/kernel/fovt_build_kernel.sh
+new file mode 100755
+index 0000000..fffe048
+--- /dev/null
++++ b/rk3568/kernel/fovt_build_kernel.sh
+@@ -0,0 +1,10 @@
++#!/bin/bash
++echo $0
++KERNEL_SCRIPT_PATH="$0"
++SCRIPT_DIR=$(dirname "$KERNEL_SCRIPT_PATH")
++echo $SCRIPT_DIR
++# 进入目标路径
++pushd "$SCRIPT_DIR" > /dev/null
++./build_kernel.sh /home3/chenzigui/src/Openharmony/d2000/OH_V5.1_BE1/src/kernel/linux/linux-5.10 /home3/chenzigui/src/Openharmony/d2000/OH_V5.1_BE1/src/out/rk3568/packages/phone/images /home3/chenzigui/src/Openharmony/d2000/OH_V5.1_BE1/src/device/board/hihope/rk3568 vendor/hihope/rk3568 /home3/chenzigui/src/Openharmony/d2000/OH_V5.1_BE1/src rockchip rk3568 hihope linux-5.10 root default disable_lto_O0 enable_ramdisk
++# 返回原路径
++popd > /dev/null
+-- 
+2.25.1
+
