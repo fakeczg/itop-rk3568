@@ -1,19 +1,19 @@
-From 9fd1e3633248362b9db3effb5a6cb74194858db6 Mon Sep 17 00:00:00 2001
+From 6ccaa4cc435a933f1d5865bb4264ef5ce46a1ce5 Mon Sep 17 00:00:00 2001
 From: fovt <chenzigui1762@phytium.com.cn>
 Date: Tue, 20 Aug 2024 19:31:04 +0800
 Subject: [PATCH] add itop-rk3568 patch and HDMI port
 
 ---
  .../boot/dts/rockchip/itop-rk3568-topeet.dtsi |  868 ++++++++
- .../arm64/boot/dts/rockchip/rk3568-linux.dtsi |    2 +-
  .../boot/dts/rockchip/rk3568-topeet-linux.dts |   21 +
  .../boot/dts/rockchip/rk3568-topeet-mipi.dtsi |  395 ++++
  .../dts/rockchip/rk3568-topeet-mipi.dtsi.dtsi |  395 ++++
  .../boot/dts/rockchip/rk3568-topeet.dtsi      | 1891 +++++++++++++++++
  .../rk3568-toybrick-mipi-tx0-beiqicloud.dtsi  |    4 +-
  .../boot/dts/rockchip/rk3568-toybrick.dtsi    |    6 +-
- make-ohos.sh                                  |    5 +-
- 9 files changed, 3580 insertions(+), 7 deletions(-)
+ make-boot.sh                                  |    1 +
+ make-ohos.sh                                  |    8 +-
+ 9 files changed, 3582 insertions(+), 7 deletions(-)
  create mode 100755 arch/arm64/boot/dts/rockchip/itop-rk3568-topeet.dtsi
  create mode 100755 arch/arm64/boot/dts/rockchip/rk3568-topeet-linux.dts
  create mode 100755 arch/arm64/boot/dts/rockchip/rk3568-topeet-mipi.dtsi
@@ -894,19 +894,6 @@ index 000000000..b6ec191b0
 +&dsi1 {
 +	status = "disabled";
 +};
-diff --git a/arch/arm64/boot/dts/rockchip/rk3568-linux.dtsi b/arch/arm64/boot/dts/rockchip/rk3568-linux.dtsi
-index 838606964..a8d10f5af 100755
---- a/arch/arm64/boot/dts/rockchip/rk3568-linux.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3568-linux.dtsi
-@@ -15,7 +15,7 @@
- 		rockchip,wake-irq = <0>;
- 		/* If enable uart uses irq instead of fiq */
- 		rockchip,irq-mode-enable = <1>;
--		rockchip,baudrate = <1500000>;  /* Only 115200 and 1500000 */
-+		rockchip,baudrate = <115200>;  /* Only 115200 and 1500000 */
- 		interrupts = <GIC_SPI 252 IRQ_TYPE_LEVEL_LOW>;
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&uart2m0_xfer>;
 diff --git a/arch/arm64/boot/dts/rockchip/rk3568-topeet-linux.dts b/arch/arm64/boot/dts/rockchip/rk3568-topeet-linux.dts
 new file mode 100755
 index 000000000..035cefde3
@@ -3679,8 +3666,20 @@ index 8be2d36f3..a84c21c70 100755
  	pmuio2-supply = <&vcc3v3_pmu>;
  	vccio1-supply = <&vccio_acodec>;
  	// vccio2-supply = <&vccio_flash>;
+diff --git a/make-boot.sh b/make-boot.sh
+index f4cd4c452..f7845e815 100755
+--- a/make-boot.sh
++++ b/make-boot.sh
+@@ -10,6 +10,7 @@ BUILD_PATH=boot_linux
+ EXTLINUX_PATH=${BUILD_PATH}/extlinux
+ EXTLINUX_CONF=${EXTLINUX_PATH}/extlinux.conf
+ TOYBRICK_DTB=toybrick.dtb
++TOPEET_DTB=itoprk3568.dtb
+ 
+ function make_boot_image()
+ {
 diff --git a/make-ohos.sh b/make-ohos.sh
-index a9e22dc69..423f02419 100755
+index a9e22dc69..e49d26619 100755
 --- a/make-ohos.sh
 +++ b/make-ohos.sh
 @@ -22,6 +22,7 @@ BUILD_PATH=boot_linux
@@ -3709,6 +3708,16 @@ index a9e22dc69..423f02419 100755
  	cmdline="append earlycon=uart8250,mmio32,${uart} root=PARTUUID=614e0000-0000-4b53-8000-1d28000054a9 rw rootwait rootfstype=ext4"
  	echo "  ${cmdline}" >> ${EXTLINUX_CONF}
  }
+@@ -131,7 +134,8 @@ function make_boot_linux()
+ 	fi
+ 	make_extlinux_conf ${dtb_path} ${uart} ${image}
+ 	cp -f ${OBJ_PATH}arch/${arch}/boot/${image} ${EXTLINUX_PATH}/
+-	cp -f ${OBJ_PATH}${dtb_path}/${dtb}.dtb ${EXTLINUX_PATH}/${TOYBRICK_DTB}
++	#cp -f ${OBJ_PATH}${dtb_path}/${dtb}.dtb ${EXTLINUX_PATH}/${TOYBRICK_DTB}
++	cp -f ${OBJ_PATH}${dtb_path}/${dtb}.dtb ${EXTLINUX_PATH}/${TOPEET_DTB}
+ 	cp -f logo*.bmp ${BUILD_PATH}/
+ 	if [ "enable_ramdisk" != "${ramdisk_flag}" ]; then
+ 		make_ext2_image
 -- 
 2.25.1
 
